@@ -39,7 +39,7 @@ task('typo3-remote:database:push', function () {
     );
     writeln("{{MsgClear}}{{SymInfo}}");
     // upload database dump to database directory
-    writeln('{{SymProgress}} Uploading file {{database_file}} to host');
+    writeln('{{SymProgress}} Uploading file {{database_file}} to remote host');
     run("cd {{deploy_path}} && if [ ! -d .dep/database ]; then mkdir -p .dep/database; fi");
     upload('{{database_file}}', '{{deploy_path}}/.dep/database/');
     writeln("{{MsgClear}}{{SymInfo}}");
@@ -65,29 +65,6 @@ task('typo3-remote:database:push', function () {
         // in any case remove database dump again
         run('cd {{deploy_path}} && if [ -e .dep/database/{{database_file}} ]; then rm .dep/database/{{database_file}}; fi');
         writeln("{{MsgClear}}{{SymInfo}}");
-
-        $backendUsers = has('typo3_backend_user') ? get('typo3_backend_user') : null;
-        if (is_array($backendUsers)) {
-            foreach ($backendUsers as $backendUser) {
-                if (empty($backendUser['username']) || empty($backendUser['password'])) {
-                    writeln('{{SymError}} Both "username" and "password" must be set for "typo3_backend_user" items');
-                    continue;
-                }
-                run(
-                    sprintf(
-                        '%s -e %s',
-                        $command,
-                        escapeshellarg(sprintf(
-                            'UPDATE be_users SET password=%s WHERE username=%s AND deleted=0',
-                            escapeshellarg($backendUser['password']),
-                            escapeshellarg($backendUser['username'])
-                        ))
-                    )
-                );
-                writeln('{{SymInfo}} Adjusted backend user ' . $backendUser['username']);
-            }
-        }
-
     } catch (\Exception $exception) {
         writeln("{{MsgClear}}{{SymError}}");
         throw $exception;
@@ -97,6 +74,33 @@ task('typo3-remote:database:push', function () {
         run('cd {{deploy_path}} && if [ -e .dep/database/{{database_file}} ]; then rm .dep/database/{{database_file}}; fi');
     }
 })->desc('Push local database to remote host');
+
+task('typo3-remote:database:download', function () {
+    $localFileName = date('Y-m-d--H-i-s') . '.remote.sql';
+    set('database_file', sha1(uniqid()) . '.sql');
+    writeln('{{SymProgress}} Dumping remote database to {{database_file}}');
+    // create database dump
+    run("cd {{deploy_path}} && if [ ! -d .dep/database ]; then mkdir -p .dep/database; fi");
+    run(
+        sprintf(
+            'mysqldump %s -c -h %s --port %s -u %s -p%s > %s',
+            escapeshellarg(get('remote_db_name')),
+            escapeshellarg(get('remote_db_host')),
+            escapeshellarg(get('remote_db_port')),
+            escapeshellarg(get('remote_db_user')),
+            escapeshellarg(get('remote_db_pass')),
+            '.dep/database/' . get('database_file')
+        )
+    );
+    writeln("{{MsgClear}}{{SymInfo}}");
+    // upload database dump to database directory
+    writeln('{{SymProgress}} Download file {{database_file}} to from remote host as ' . $localFileName);
+    download('{{deploy_path}}/.dep/database/{{database_file}}', $localFileName);
+    writeln("{{MsgClear}}{{SymInfo}}");
+    // try to import database dump
+    run('cd {{deploy_path}} && if [ -e .dep/database/{{database_file}} ]; then rm .dep/database/{{database_file}}; fi');
+    writeln('{{SymInfo}} Database dump available in file ' . $localFileName);
+})->desc('Download remote database dump to local host');
 
 task('typo3-remote:database:flush', function () {
     $remoteDatabaseName = get('remote_db_name');

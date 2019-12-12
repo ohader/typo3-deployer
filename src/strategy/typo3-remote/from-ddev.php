@@ -36,5 +36,8 @@ task('deploy', [
     'cleanup',
 ])->desc('Deploy your TYPO3 project');
 
+before('typo3-remote:database:download', 'typo3-remote:ddev:local-config');
+before('typo3-remote:database:download', 'typo3-remote:inventory:remote-config');
+
 after('deploy:failed', 'deploy:unlock');
 after('deploy', 'success');
