@@ -5,7 +5,7 @@
 > Currently only deployment from local DDEV to remote SSH server is supported
 
 ```bash
-composer req --dev oliver-hader/typo3-remote
+composer req --dev oliver-hader/typo3-deployer
 ```
 
 ## Usage
