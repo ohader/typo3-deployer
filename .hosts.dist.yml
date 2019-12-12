@@ -1,0 +1,55 @@
+# rename to hosts.yml & change sensitive information
+example.domain.name:
+  repository: 'https://github.com/HofUniversityIndieOne2019/book-store-project.git'
+  # if `branch` is not set, current branch name of local working copy will be used
+  branch: 'master'
+  stage: 'production'
+  # deploy path + typo3_webroot (see below) result in public web path, here e.g. '~/current/public/'
+  # (the 'current' segment is maintained by Deployer, pointing to the current release)
+  deploy_path: '~/'
+  # DocumentRoot for TYPO3 project (public accessible)
+  typo3_webroot: 'public'
+  # SSH username
+  user: 'example_user'
+  # SSH port (default 22)
+  port: 22
+  # TYPO3 specific definitions
+  typo3:
+    # either 'apache' or 'nginx'
+    serverType: 'nginx'
+    # TYPO3_CONF_VARS settings to be overridden in remote LocalConfiguration.php
+    settings:
+      DB:
+        Connections:
+          Default:
+            dbname: 'database'
+            host: '127.0.0.1'
+            password: 'password'
+            port: 3306
+            user: 'username'
+      MAIL:
+        transport: 'smtp'
+        transport_smtp_server: 'localhost:25'
+      BE:
+        # (`::password-hash::` will trigger a cryptographic password
+        # hash being applied to the following clear-text value)
+        installToolPassword: '::password-hash::install-tool-password'
+      SYS:
+        # (`::random-value::` will trigger creating a 64 byte random value)
+        encryptionKey: '::random-value::'
+    # TYPO3 Install Tool presets to be applied
+    presets:
+      # 'debug' or 'live'
+      context: 'debug'
+    # Database changes to be applied on remote database
+    databaseChanges:
+      # name of the table 'be_users'
+      be_users:
+          # set: key-value pairs to be modified
+          # (`::password-hash::` will trigger a cryptographic password
+          # hash being applied to the following clear-text value)
+        - set:
+            password: '::password-hash::admin-password'
+          # where: constraints to be matched (which records to modify)
+          where:
+            username: 'admin'

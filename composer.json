@@ -1,0 +1,28 @@
+{
+    "name": "oliver-hader/typo3-deployer",
+    "description": "Deployer toolkit for deploying TYPO3 to remote server",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Oliver Hader",
+            "email": "oliver@typo3.org"
+        }
+    ],
+    "require": {
+        "deployer/deployer": "^6.6"
+    },
+    "suggest": {
+        "typo3/cms-core": "^9.5 || ^10.0",
+        "typo3/cms-install": "^9.5 || ^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "OliverHader\\TYPO3Remote\\": "src"
+        },
+        "files": [
+            "src/autoload.php",
+            "src/functions.php"
+        ]
+    }
+}
