@@ -188,3 +188,10 @@ task('typo3-remote:database:change', function() {
         );
     }
 })->desc('Applies changes to database records');
+
+before('typo3-remote:database:push', 'typo3-remote:ddev:local-config');
+before('typo3-remote:database:push', 'typo3-remote:inventory:remote-config');
+after('typo3-remote:database:push', 'typo3-remote:database:change');
+
+before('typo3-remote:database:change', 'typo3-remote:ddev:local-config');
+before('typo3-remote:database:change', 'typo3-remote:inventory:remote-config');
